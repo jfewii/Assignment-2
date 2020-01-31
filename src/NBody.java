@@ -1,136 +1,122 @@
+
+
 /**
- * Celestial Body class for NBody
  * @author Jason Few
  *
+ * Simulation program for the NBody assignment
  */
-public class CelestialBody {
 
-	private double myXPos;
-	private double myYPos;
-	private double myXVel;
-	private double myYVel;
-	private double myMass;
-	private String myFileName;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class NBody {
 
 	/**
-	 * Create a Body from parameters
-	 * @param xp initial x position
-	 * @param yp initial y position
-	 * @param xv initial x velocity
-	 * @param yv initial y velocity
-	 * @param mass of object
-	 * @param filename of image for object animation
+	 * Read the specified file and return the radius
+	 * @param fname is name of file that can be open
+	 * @return the radius stored in the file
+	 * @throws FileNotFoundException if fname cannot be open
 	 */
-	public CelestialBody(double xp, double yp, double xv, double yv, double mass, String filename){
-		myXPos = xp;
-		myYPos = yp;
-		myXVel = xv;
-		myYVel = yv;
-		myMass = mass;
-		myFileName = filename;
-
+	public static double readRadius(String fname) throws FileNotFoundException  {
+		Scanner s = new Scanner(new File(fname));
+		double radius = s.nextDouble();
+		radius = s.nextDouble();
+		s.close();
+		return radius;
 	}
 
 	/**
-	 * Copy constructor: copy instance variables from one
-	 * body to this body
-	 * @param b used to initialize this body
+	 * Read all data in file, return array of Celestial Bodies
+	 * read by creating an array of Body objects from data read.
+	 * @param fname is name of file that can be open
+	 * @return array of Body objects read
+	 * @throws FileNotFoundException if fname cannot be open
 	 */
-	public CelestialBody(CelestialBody b){
-		myXPos = b.getX();
-		myYPos = b.getY();
-		myXVel = b.getXVel();
-		myYVel = b.getYVel();
-		myMass = b.getMass();
-		myFileName = b.getName();
-		// TODO: complete constructor
-	}
+	public static CelestialBody[] readBodies(String fname) throws FileNotFoundException {
 
-	public double getX() {
-		// TODO: complete method
-		return myXPos;
-	}
-	public double getY() {
-		return myYPos;
-	}
-	public double getXVel() {
-		return myXVel;
-	}
-	public double getYVel() {
-		return myYVel;
-	}
-	/**
-	 * Return y-velocity of this Body.
-	 * @return value of y-velocity.
-	 */
-	public double getMass() {
-		return myMass;
-		// TODO: complete method
-
-	}
-	public String getName() {
-		// TODO: complete method
-		return myFileName;
-	}
-
-	/**
-	 * Return the distance between this body and another
-	 * @param b the other body to which distance is calculated
-	 * @return distance between this body and b
-	 */
-	public double calcDistance(CelestialBody b) {
-		double dx = myXPos - b.getX();
-		double dy = myYPos - b.getY();
-		return Math.sqrt(dx*dx + dy*dy);
-	}
-
-	public double calcForceExertedBy(CelestialBody b) {
-		return (6.67*1e-11) * myMass * b.getMass() / (calcDistance(b)*calcDistance(b));
-	}
-
-	public double calcForceExertedByX(CelestialBody b) {
-		double fx = calcForceExertedBy(b) * (b.getX()-myXPos) / calcDistance(b);
-		return fx;
-	}
-	public double calcForceExertedByY(CelestialBody b) {
-		double fy = calcForceExertedBy(b) * (b.getY()-myYPos) / calcDistance(b);
-		return fy;
-	}
-
-	public double calcNetForceExertedByX(CelestialBody[] bodies) {
-		double netForceX = 0;
-		for (CelestialBody body: bodies){
-			if (!body.equals(this)){
-				netForceX += calcForceExertedByX(body);
+			Scanner s = new Scanner(new File(fname));
+			int nb = s.nextInt(); // # bodies to be read
+			CelestialBody[] bodies = new CelestialBody[nb]; // creates array
+			double radius = s.nextDouble();
+			for(int k=0; k < nb; k++) {
+				double xPos = s.nextDouble();
+				double yPos = s.nextDouble();
+				double xVel = s.nextDouble();
+				double yVel = s.nextDouble();
+				double mass = s.nextDouble();
+				String imgN = s.next();
+				CelestialBody b = new CelestialBody(xPos, yPos, xVel, yVel, mass, imgN);
+				bodies[k] = b;
 			}
-		}
-		return netForceX;
+			s.close();
+			return bodies;
 	}
+	public static void main(String[] args) throws FileNotFoundException{
+		double totalTime = 39447000.0;
+		double dt = 25000.0;
 
-	public double calcNetForceExertedByY(CelestialBody[] bodies) {
-		double netForceY = 0;
-		for (CelestialBody body: bodies){
-			if (!body.equals(this)){
-				netForceY += calcForceExertedByY(body);
+		String fname= "./data/planets.txt";
+		if (args.length > 2) {
+			totalTime = Double.parseDouble(args[0]);
+			dt = Double.parseDouble(args[1]);
+			fname = args[2];
+		}
+
+		CelestialBody[] bodies = readBodies(fname);
+		double radius = readRadius(fname);
+
+		StdDraw.enableDoubleBuffering();
+		StdDraw.setScale(-radius, radius);
+		StdDraw.picture(0,0,"images/starfield.jpg");
+		//StdAudio.play("images/2001.wav");
+
+		// run simulation until time up
+
+		for(double t = 0.0; t < totalTime; t += dt) {
+			double[] xForces = new double[bodies.length];
+			double[] yForces = new double[bodies.length];
+
+			for(int k = 0; k<bodies.length;k++) {
+				xForces[k] = bodies[k].calcNetForceExertedByX(bodies);
+				yForces[k] = bodies[k].calcNetForceExertedByY(bodies);
 			}
+
+			for(int i = 0; i<bodies.length;i++){
+				bodies[i].update(dt,xForces[i], yForces[i]);
 		}
-		return netForceY;
-	}
 
-	public void update(double deltaT, double xforce, double yforce) {
-		double xm = xforce / myMass;
-		double ym = yforce / myMass;
-		double xat = myXVel + (xm * deltaT);
-		double yat = myYVel + (ym * deltaT);
-		double xt = myXPos + (deltaT * xat);
-		double yt = myYPos + (deltaT * yat);
-		myXVel= xat;
-		myYVel = yat;
-		myXPos = xt;
-		myYPos = yt;
-	}
 
-	public void draw() {
-		StdDraw.picture(myXPos, myYPos, "images/" + myFileName);
+			// TODO: create double arrays xforces and yforces
+			// to hold forces on each body
+
+			// TODO: loop over all bodies, calculate netForcesX and Y
+			// net forces and store in xforces and yforces
+
+			// TODO: loop over all bodies and call update
+			// with dt and corresponding xforces, yforces values
+
+			StdDraw.picture(0,0,"images/starfield.jpg");
+
+			for(int j =0; j < bodies.length; j++){
+				bodies[j].draw();
+			}
+
+			// TODO: loop over all bodies and call draw on each one
+
+			StdDraw.show();
+			StdDraw.pause(10);
+		}
+
+		// prints final values after simulation
+
+		System.out.printf("%d\n", bodies.length);
+		System.out.printf("%.2e\n", radius);
+		for (int i = 0; i < bodies.length; i++) {
+		    System.out.printf("%11.4e %11.4e %11.4e %11.4e %11.4e %12s\n",
+		   		              bodies[i].getX(), bodies[i].getY(),
+		                      bodies[i].getXVel(), bodies[i].getYVel(),
+		                      bodies[i].getMass(), bodies[i].getName());
+		}
 	}
 }

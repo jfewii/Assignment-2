@@ -1,5 +1,3 @@
-
-
 /**
  * Celestial Body class for NBody
  * @author Jason Few
@@ -127,7 +125,7 @@ public class CelestialBody {
 		double xt = myXPos + (deltaT * xat);
 		double yt = myYPos + (deltaT * yat);
 		myXVel= xat;
-		myYVel = yt;
+		myYVel = yat;
 		myXPos = xt;
 		myYPos = yt;
 	}
