@@ -25,11 +25,11 @@ public class CelestialBody {
 	 */
 	public CelestialBody(double xp, double yp, double xv, double yv, double mass, String filename){
 		myXPos = xp;
-		myYpos = yp;
+		myYPos = yp;
 		myXVel = xv;
-		myYvel = yv;
+		myYVel = yv;
 		myMass = mass;
-		myFileName = filename
+		myFileName = filename;
 
 	}
 
@@ -103,7 +103,7 @@ public class CelestialBody {
 		double netForceX = 0;
 		for (CelestialBody body: bodies){
 			if (!body.equals(this)){
-				netForceX += calcForceExertedByX(body)
+				netForceX += calcForceExertedByX(body);
 			}
 		}
 		return netForceX;
@@ -113,7 +113,7 @@ public class CelestialBody {
 		double netForceY = 0;
 		for (CelestialBody body: bodies){
 			if (!body.equals(this)){
-				netForceY += calcForceExertedByY(body)
+				netForceY += calcForceExertedByY(body);
 			}
 		}
 		return netForceY;

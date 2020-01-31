@@ -23,7 +23,7 @@ public class NBody {
 		double radius = s.nextDouble();
 		radius = s.nextDouble();
 		s.close();
-		return radius
+		return radius;
 	}
 
 	/**
@@ -37,13 +37,20 @@ public class NBody {
 
 			Scanner s = new Scanner(new File(fname));
 			int nb = s.nextInt(); // # bodies to be read
-			CelestialBody[] bodies = new CelestialBody[nb];
+			CelestialBody[] bodies = new CelestialBody[nb]; // creates array
 			double radius = s.nextDouble();
 			for(int k=0; k < nb; k++) {
-				bodies[k] = new CelestialBody(s.nextDouble(),s.nextDouble(),s.nextDouble(),s.nextDouble(),s.next());
+				double xPos = s.nextDouble();
+				double yPos = s.nextDouble();
+				double xVel = s.nextDouble();
+				double yVel = s.nextDouble();
+				double mass = s.nextDouble();
+				String imgN = s.next();
+				CelestialBody b = new CelestialBody(xPos, yPos, xVel, yVel, mass, imgN);
+				bodies[k] = b;
 			}
 			s.close();
-			return bodies
+			return bodies;
 	}
 	public static void main(String[] args) throws FileNotFoundException{
 		double totalTime = 39447000.0;
@@ -67,12 +74,19 @@ public class NBody {
 		// run simulation until time up
 
 		for(double t = 0.0; t < totalTime; t += dt) {
-			xForces[i] = bodies[i].calcNetForceExertedByX(bodies);
-			yForces[i] = bodies[i].calcNetForceExertedByY(bodies);
+			double[] xForces = new double[bodies.length];
+			double[] yForces = new double[bodies.length];
+
+			for(int k = 0; k<bodies.length;k++) {
+				xForces[k] = bodies[k].calcNetForceExertedByX(bodies);
+				yForces[k] = bodies[k].calcNetForceExertedByY(bodies);
+			}
+
+			for(int i = 0; i<bodies.length;i++){
+				bodies[i].update(dt,xForces[i], yForces[i]);
 		}
-		for(int k = 0; k<bodies.length;k++){
-			bodies[k].update(dt, xForces[k], yForces[k]);
-		}
+
+
 			// TODO: create double arrays xforces and yforces
 			// to hold forces on each body
 
